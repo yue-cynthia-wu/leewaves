@@ -1,6 +1,6 @@
   subroutine write_cdf(step,n)
 
-  USE header,ONLY : NI,NJ,NK,ntr,nconsume,dirout,out1d_int,out2d_int,out3d_int,rc_kind,pvt,pv1,pv2,pv3
+  USE header,ONLY : NI,NJ,NK,ntr,nconsume,nsteps,dirout,out1d_int,out2d_int,out3d_int,rc_kind,pvt,pv1,pv2,pv3
   IMPLICIT NONE
 
   INTEGER :: step,counter_2d,counter_3d,counter_1d,ksurf,islice,jslice,imooring,jmooring,n
@@ -32,9 +32,9 @@
      write(6,*) 'write_cdf_2D_sigma'
 
     ksurf=NK;    call write_cdf_2D_sigma(ksurf,counter_2d,n)    ! at 0.75 m depth
-    ksurf=41;    call write_cdf_2D_sigma(ksurf,counter_2d,n)    ! at 15 m depth
-    ksurf=36;    call write_cdf_2D_sigma(ksurf,counter_2d,n)    ! at 32 m depth
-    ksurf=28;    call write_cdf_2D_sigma(ksurf,counter_2d,n)    ! at 80 m depth
+!    ksurf=41;    call write_cdf_2D_sigma(ksurf,counter_2d,n)    ! at 15 m depth
+!    ksurf=36;    call write_cdf_2D_sigma(ksurf,counter_2d,n)    ! at 32 m depth
+!    ksurf=28;    call write_cdf_2D_sigma(ksurf,counter_2d,n)    ! at 80 m depth
 
  !   islice=  2;call write_cdf_2D_x(islice,counter_2d,n)
  !   islice=  5;call write_cdf_2D_x(islice,counter_2d,n)
@@ -49,17 +49,17 @@
  !   islice= 40;call write_cdf_2D_x(islice,counter_2d,n)
   write(6,*) 'write_cdf_2D_x'
   islice= NI/2;call write_cdf_2D_x(islice,counter_2d,n)
-  islice= NI;call write_cdf_2D_x(islice,counter_2d,n)
+!  islice= NI;call write_cdf_2D_x(islice,counter_2d,n)
  !  islice= 60;call write_cdf_2D_x(islice,counter_2d,n)
  !   islice= 80;call write_cdf_2D_x(islice,counter_2d,n)
  !  islice= 96;call write_cdf_2D_x(islice,counter_2d,n)
   write(6,*) 'write_cdf_2D_y'
-!!  jslice= NJ/2;call write_cdf_2D_y(jslice,counter_2d,n)
+  jslice= NJ/2;call write_cdf_2D_y(jslice,counter_2d,n)
 
   write(6,*) 'write_cdf_2D_isopycnal'
-  sigma=23.d0;  call write_cdf_2D_isopycnal(sigma,counter_2d,n) ! writes the solution on the sigma isopycnal
-  sigma=24.d0;  call write_cdf_2D_isopycnal(sigma,counter_2d,n) ! writes the solution on the sigma isopycnal
-  sigma=25.d0;  call write_cdf_2D_isopycnal(sigma,counter_2d,n) ! writes the solution on the sigma isopycnal
+!  sigma=23.d0;  call write_cdf_2D_isopycnal(sigma,counter_2d,n) ! writes the solution on the sigma isopycnal
+!  sigma=24.d0;  call write_cdf_2D_isopycnal(sigma,counter_2d,n) ! writes the solution on the sigma isopycnal
+!  sigma=25.d0;  call write_cdf_2D_isopycnal(sigma,counter_2d,n) ! writes the solution on the sigma isopycnal
 
  !   z=-5.;    call write_cdf_2D_geopotential(z,counter_2d,n) ! writes the solution on the geopotential
  !   z=-25.;   call write_cdf_2D_geopotential(z,counter_2d,n) ! writes the solution on the geopotential
@@ -75,7 +75,7 @@
   end if
 
   ! 3D output
-  if (mod(step,out3d_int).eq.0) then
+  if ((mod(step,out3d_int).eq.0).or.(step.eq.nsteps)) then
      write(6,*) 'write_cdf_3D'
     counter_3d= step/out3d_int +1 
    call write_cdf_3D(step,n)

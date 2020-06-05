@@ -30,15 +30,17 @@
 !      tightness = 0.03d0  
       tightness = 0.1d0  
 
-      n2bkgrnd = 1.d-6    !N^2 value
-      dTdz = n2bkgrnd/(alpha* grav)
+      n2bkgrnd = 2.533d-8    !N^2 value corresp. to N=1d-3 rad/s
+      dTdz = n2bkgrnd/(alpha* grav)     ! d(rho)/dz = N2bkgrnd *R0/grav
       
       !set salnity constant,  front is only in temperature
       s = sbkgrnd
 !-------------------------------------------------------------
       ! cross-front gradients
-      drho = 0.02   !this is delta rho across the front
-      dtemp=  drho/ ( alpha * 1000.)    ! this is delta temp , e.g 1 deg C
+      ! drho cannot exceed the vertical temperature change dz*(R0*n2bkgrnd/grav)
+      drho = 0.002   !this is delta rho across the front
+      dtemp=  -drho/ ( alpha * 1000.)    ! this is delta temp , e.g. 1 deg C
+      ! -negative dtemp gives eastward flow with f positive. 
 !     --------------------
       n=0
       !Set up constant stratification
@@ -57,7 +59,7 @@
 !     ADD FRONT
 !     A frontal region is introduced to the channel.
  
-      dep_front= 0.6*sum(D)/dble((NI+2)*(NJ+2))
+      dep_front= 0.5*sum(D)/dble((NI+2)*(NJ+2))
       do j=0,NJ+1
          do i=0,NI+1
  
@@ -80,6 +82,7 @@
 !                  s(i,j,k,0)= slfacnew*thy + s(i,NJ,k,0)
               if (zc(i,j,k).lt.dep_front) then
                  T(i,j,k,0) = ((-zc(i,j,k)+dep_front)/dep_front)*dtemp*thy + T(i,NJ,k,n)
+                 ! dtemp is set negative to generate eastward flow. f is positive
               else
                  T(i,j,k,0) = T(i,NJ,k,n)
               end if
