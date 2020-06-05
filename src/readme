@@ -1,0 +1,27 @@
+modified  checks.f90 so that slope in x is permitted. 
+
+
+
+I've changed  write_cdf_2D  so that the slice is correctly written now. 
+
+Also heat_flux is changed (not sure exacly how). 
+
+write_cdf  is changed to call write to isopycnal surfaces  23,24,25  . To write to 3 z surfaces  NK, z=.75m, z=32 m and z=15 m. 
+And to call write_islice  at i=NI/2 and i=NI
+
+write_cdf_isopycnal
+
+Run1 -  vertical diffusivity seems a bit large. 
+
+Change the calc_vertical diffusivity routine  and rerun in Run2
+Reduce  Kx and Ky to 0.3 m2/s   (previously 1 m2/s) in Namelist
+
+Use Melissa's extinction coeffs
+
+Correct Melissa's extinction coeff. on 18 April 2015
+
+--
+
+Dec 28,  2019
+
+inserted stop after ini_topog
