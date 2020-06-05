@@ -31,8 +31,10 @@ subroutine ini_topog
 
          do j=0,NJ+1 
             D(i,j)= dep*DLinv 
+!flat            D(i,j)= depmean*DLinv
 !            Ddx(i,j)= deriv*LbyD*1.d-3 
             Ddx(i,j)= deriv*LbyD
+!flat            Ddx(i,j)= 0.d0
             Ddy(i,j)= 0.d0 
 !     multiplication by (L/D)*1.d-3 takes care of converting from km to m
 !     and non-dimensionalizing                                          
