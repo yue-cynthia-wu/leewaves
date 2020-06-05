@@ -6,8 +6,8 @@
 
 !---------- TIME SETTING ------------------------
 
-nsteps=1,             ! number of time steps
-dtime_dim=216d0,           ! time step (in sec)   ! try for dx=1km
+nsteps=100,             ! number of time steps
+dtime_dim=54d0,           ! time step (in sec) try 216  for dx=1km
 
 !----------  HYDROSTATIC ------------------------
 
@@ -42,9 +42,9 @@ RR=0.000d0,              ! bottom friction (in m/s)
 
 !--------  OUTPUT SETTING -----------------------
 
-out1d_int=200000000,           ! frequency of the 1D output (in number of timesteps)
-out2d_int=100,            ! frequency of the 2D output (in number of timesteps)
-out3d_int=500,            ! frequency of the 3D output (in number of timesteps)
+out1d_int=200000000,    ! frequency of the 1D output (in number of timesteps)
+out2d_int=1,            ! frequency of the 2D output (in number of timesteps)
+out3d_int=10,            ! frequency of the 3D output (in number of timesteps)
 
 dirout="/Users/amala/local/MODEL/output/lee_test1",
                            ! output directory
