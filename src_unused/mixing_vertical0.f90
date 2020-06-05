@@ -194,59 +194,59 @@ return
 END                                           
                                                                         
                                                                         
-!       subroutine viscosity(dudz,dvdz,drdz,i,j)
-! !     ---------------------------------------------
-!         USE header
-! !     Compute a Richardson number based vertical viscosity
-! !     coefficient Kz using the final velocities u,v and density
-! !     with the n=0 subscript
-! !     Kz is situated at k cell faces
-! !     The algorithm is from Rev Geophys., p 373, 1994. Large et al.
-! !
-! !     Assumes that rho is evaluated just prior to this call
-!
-!       integer i,j,k
-!
-!       integer n1
-!       parameter (n1=3)
-!       REAL(kind=rc_kind) :: fac,bvfreq,grho,RiCr,Ri,vshear
-!       REAL(kind=rc_kind) :: dudz(0:NK),dvdz(0:NK),drdz(0:NK)
-!       parameter (RiCr= 0.7d0)
-!
-!       grho= 9.81/R0
-! !     fac= DL/(UL*UL)
-!       DLinv = 1.0/DL
-!       fac = UL*UL/(DL*DL)
-! !
-! !     Set kz(k=0)= 1. It is required only for the s,T equations, since
-! !     for the momentum equations,  K*du/dz= ru.
-! !     Kz is not needed at k=0 and NK since stress bcs are used.
-!       Kz(i,j,0)= 0.d0
-!       Kz(i,j,NK)= 0.d0
-! !      if  (i.eq.16) write(100,*) 'j = ', j
-!       do k=1,NK-1
-!          bvfreq=  -grho*drdz(k)*DLinv
-! !     BVfreq is N**2 and is in s^-2 if re-dim by DLinv
-!          vshear= (dudz(k)*dudz(k) + dvdz(k)*dvdz(k))*fac
-!          if (vshear.eq.0.d0) then
-! !         if (vshear.le.1.d-12) then
-!             Ri= 100.d0
-!          else
-!             Ri= bvfreq/vshear
-!          end if
-! !     unstable density profile => Ri < 0
-!          if (Ri.le.0.d0) then
-!             Kz(i,j,k)= 1.d0
-!          else if (Ri.lt.RiCr) then
-!             Kz(i,j,k)= (1.d0 - (Ri*Ri)/(RiCr*RiCr))**n1
-!          else
-!             Kz(i,j,k)= 0.d0
-!          endif
-! !         if ((i.eq.NI/2).and.(j.eq.NJ/2)) write(6,*) Ri ,bvfreq,vshear,
-! !     &        Kz(i,j,k)
-!       end do
-!
-! !     The value of Kz to be used is  Kz(k) *Kzmax
-!
-!       return
-!       END
+      subroutine viscosity(dudz,dvdz,drdz,i,j) 
+!     ---------------------------------------------                     
+        USE header
+!     Compute a Richardson number based vertical viscosity              
+!     coefficient Kz using the final velocities u,v and density         
+!     with the n=0 subscript                                            
+!     Kz is situated at k cell faces                                    
+!     The algorithm is from Rev Geophys., p 373, 1994. Large et al.     
+!                                                                       
+!     Assumes that rho is evaluated just prior to this call             
+                                                                        
+      integer i,j,k 
+                                                                        
+      integer n1 
+      parameter (n1=3) 
+      REAL(kind=rc_kind) :: fac,bvfreq,grho,RiCr,Ri,vshear 
+      REAL(kind=rc_kind) :: dudz(0:NK),dvdz(0:NK),drdz(0:NK) 
+      parameter (RiCr= 0.7d0) 
+                                                                        
+      grho= 9.81/R0 
+!     fac= DL/(UL*UL)                                                   
+      DLinv = 1.0/DL 
+      fac = UL*UL/(DL*DL) 
+!                                                                       
+!     Set kz(k=0)= 1. It is required only for the s,T equations, since  
+!     for the momentum equations,  K*du/dz= ru.                         
+!     Kz is not needed at k=0 and NK since stress bcs are used.         
+      Kz(i,j,0)= 0.d0 
+      Kz(i,j,NK)= 0.d0 
+!      if  (i.eq.16) write(100,*) 'j = ', j                             
+      do k=1,NK-1 
+         bvfreq=  -grho*drdz(k)*DLinv 
+!     BVfreq is N**2 and is in s^-2 if re-dim by DLinv                  
+         vshear= (dudz(k)*dudz(k) + dvdz(k)*dvdz(k))*fac 
+         if (vshear.eq.0.d0) then 
+!         if (vshear.le.1.d-12) then                                    
+            Ri= 100.d0 
+         else 
+            Ri= bvfreq/vshear 
+         end if 
+!     unstable density profile => Ri < 0                                
+         if (Ri.le.0.d0) then 
+            Kz(i,j,k)= 1.d0 
+         else if (Ri.lt.RiCr) then 
+            Kz(i,j,k)= (1.d0 - (Ri*Ri)/(RiCr*RiCr))**n1 
+         else 
+            Kz(i,j,k)= 0.d0 
+         endif 
+!         if ((i.eq.NI/2).and.(j.eq.NJ/2)) write(6,*) Ri ,bvfreq,vshear,
+!     &        Kz(i,j,k)                                                
+      end do 
+                                                                        
+!     The value of Kz to be used is  Kz(k) *Kzmax                       
+                                                                        
+      return 
+      END                                           

@@ -3,17 +3,17 @@ subroutine advection_and_mixing(m,n,dtimel,step)
 !     ---------------------------------------------                     
 USE header
 
-INTEGER :: i,j,k,ix
+INTEGER :: i,j,k
 INTEGER :: n,m,step
 
-REAL(kind=rc_kind) :: dtimel!, restore = 1./(3600.*24.*5.)
-REAL(kind=rc_kind), dimension(0:NI+1,0:NJ+1,0:NK+1) :: var,var0       ! var=(s,T,u,v,w,Tr(it,:,:,:)                    
-REAL(kind=rc_kind), dimension(0:NI+1,0:NJ+1,0:NK+1) :: uvarx, uvarx_advec 
-                                               ! uvarx is the source term, divergence of the advective fluxes
-REAL(kind=rc_kind), dimension(1:NI,1:NJ,1:NK) :: vardif   ! vardif is the source term from diabatic processes 
-REAL(kind=rc_kind), dimension(1:NI,1:NJ,1:NK) :: Tbar
-REAL(kind=rc_kind), dimension(1:NJ,1:NK) :: Tbar_rep
-!REAL(kind=rc_kind), dimension(1:NI,1:NJ,1:NK) :: T_h,u_w, v_w
+REAL(kind=rc_kind) :: dtimel
+
+REAL(kind=rc_kind), dimension(    0:NI+1,0:NJ+1, 0:NK+1) :: var,var0              ! var=(s,T,u,v,w,Tr(it,:,:,:)                    
+REAL(kind=rc_kind), dimension(    0:NI+1,0:NJ+1, 0:NK+1) :: uvarx, uvarx_advec    ! uvarx  is the source term, divergence of the advective fluxes 
+REAL(kind=rc_kind), dimension(    1:NI  ,1:NJ  , 1:NK  ) :: vardif                ! vardif is the source term from diabatic processes 
+!REAL(kind=rc_kind), dimension(    1:NI  ,1:NJ  , 1:NK  ) :: vardif2               ! vardif is the source term from diabatic processes 
+!REAL(kind=rc_kind), dimension(    1:NI  ,1:NJ  , 1:NK  ) :: T_h,u_w, v_w       
+
 !INTEGER :: iv_compute_kz
 INTEGER :: av_comp(5+ntr)
 
@@ -63,8 +63,6 @@ do selvar=1,5+ntr
 
       vardif=0.;  !vardif2=0.
       call mixing_horizontal(var,vardif);   ! Horizontal diffusion in vardif
-!       call mixing_horizontal_biharmonic(var,vardif);   ! Horizontal diffusion in vardif
-
      !call mixing_isopycnal(var,vardif,10.);PRINT*,"VISCOUS REDI";
      !call mixing_isopycnal_biharmonic(var,vardif,1.);PRINT*,"BIHARMONIC REDI"
 
@@ -76,7 +74,7 @@ do selvar=1,5+ntr
     uvarx_advec(1:NI,1:NJ,1:NK) = uvarx(1:NI,1:NJ,1:NK)
                        
     ! ---------------------------------------------------------------
-    ! computation of the vertical diabatic fluxes. vardif is the divergence of the diffusive fluxes, non-dimensionalized 
+    ! computation of the vertical diabatic fluxes.   vardif is the divergence of the diffusive fluxes, non-dimensionalized 
 
     if(selvar<4.5) then                ! vertical mixing ought to be for all tracers
       vardif=0.;
@@ -100,8 +98,7 @@ do selvar=1,5+ntr
           mat_A(i,j,1:NK,selvar)   = dtimel*Jacinv(i,j,1:NK)*mat_A(i,j,1:NK,selvar)
           mat_B(i,j,1:NK,selvar)   = ( (dtimel*Jacinv(i,j,1:NK)*mat_B(i,j,1:NK,selvar)) - 1)
           mat_C(i,j,1:NK-1,selvar) = dtimel*Jacinv(i,j,1:NK-1)*mat_C(i,j,1:NK-1,selvar)
-          mat_D(i,j,1:NK,selvar)   = 0.d0 - var0(i,j,1:NK ) - (dtimel*Jacinv(i,j,1:NK)*mat_D(i,j,1:NK,selvar)) + &
-          & (dtimel*Jacinv(i,j,1:NK)*uvarx_advec(i,j,1:NK))
+          mat_D(i,j,1:NK,selvar)   = 0.d0 - var0(i,j,1:NK ) - (dtimel*Jacinv(i,j,1:NK)*mat_D(i,j,1:NK,selvar)) + (dtimel*Jacinv(i,j,1:NK)*uvarx_advec(    i,j,1:NK))
 
           call solve_tridiag(mat_A(i,j,1:NK,selvar), mat_B(i,j,1:NK,selvar), mat_C(i,j,1:NK,selvar), mat_D(i,j,1:NK,selvar), mat_test(i,j,1:NK,selvar), NK )
 
@@ -115,36 +112,25 @@ do selvar=1,5+ntr
       if(selvar==4) cy(1:NI,1:NJ,1:NK)   = mat_test(1:NI,1:NJ,1:NK,selvar)
       !if(selvar==5) cz(1:NI,1:NJ,1:NK)   = mat_test(1:NI,1:NJ,1:NK,selvar) 
 #else
-!       if(selvar==1) then
-!          T(1:NI,1:NJ,1:NK,n)=T(1:NI,1:NJ,1:NK,0)-dtimel*Jacinv(1:NI,1:NJ,1:NK)*uvarx(1:NI,1:NJ,1:NK)
-! 		   Tbar_rep = sum(T(1:NI,1:NJ,1:NK,n),1)/NI
-!          Tbar= spread(Tbar_rep, 1, NI)
-! 		   T(1:NI,1:NJ,1:NK,n)=T(1:NI,1:NJ,1:NK,n) - dtimel*restore*LEN/UL*(Tbar(1:NI,1:NJ,1:NK)-T_ini(1:NI,1:NJ,1:NK))
-
-!          Tbar_rep = sum(T(1:NI,1:NJ,1:NK,0),1)/NI
-!          Tbar= spread(Tbar_rep,1,NI)
-!          T(1:NI,1:NJ,1:NK,n)=T(1:NI,1:NJ,1:NK,0) - dtimel* ( Jacinv(1:NI,1:NJ,1:NK)*uvarx(1:NI,1:NJ,1:NK)  &
-!                             & + restore*LEN/UL*( Tbar(1:NI,1:NJ,1:NK)-T_ini(1:NI,1:NJ,1:NK) ) )
-!       end if
-
       if(selvar==1) T(1:NI,1:NJ,1:NK,n)=T(1:NI,1:NJ,1:NK,0)-dtimel*Jacinv(1:NI,1:NJ,1:NK)*uvarx(1:NI,1:NJ,1:NK)
       if(selvar==2) s(1:NI,1:NJ,1:NK,n)=s(1:NI,1:NJ,1:NK,0)-dtimel*Jacinv(1:NI,1:NJ,1:NK)*uvarx(1:NI,1:NJ,1:NK)
       if(selvar==3) cx(1:NI,1:NJ,1:NK) =u(1:NI,1:NJ,1:NK,0)-dtimel*Jacinv(1:NI,1:NJ,1:NK)*uvarx(1:NI,1:NJ,1:NK)
       if(selvar==4) cy(1:NI,1:NJ,1:NK) =v(1:NI,1:NJ,1:NK,0)-dtimel*Jacinv(1:NI,1:NJ,1:NK)*uvarx(1:NI,1:NJ,1:NK)
+      !if(selvar==5) cz(1:NI,1:NJ,1:NK) =w(1:NI,1:NJ,1:NK,0)-dtimel*Jacinv(1:NI,1:NJ,1:NK)*uvarx(1:NI,1:NJ,1:NK)
 #endif
 
-   if(selvar==5) cz(1:NI,1:NJ,1:NK) =w(1:NI,1:NJ,1:NK,0)-dtimel*Jacinv(1:NI,1:NJ,1:NK)*uvarx(1:NI,1:NJ,1:NK)
-      do it=1,ntr
-         if(selvar==5+it) Tr(it,1:NI,1:NJ,1:NK,n) =Tr(it,1:NI,1:NJ,1:NK,0)-dtimel*Jacinv(1:NI,1:NJ,1:NK)*uvarx(1:NI,1:NJ,1:NK)
-      enddo
+    if(selvar==5) cz(1:NI,1:NJ,1:NK) =w(1:NI,1:NJ,1:NK,0)-dtimel*Jacinv(1:NI,1:NJ,1:NK)*uvarx(1:NI,1:NJ,1:NK)
 
-   endif
+    do it=1,ntr
+      if(selvar==5+it) Tr(it,1:NI,1:NJ,1:NK,n) =Tr(it,1:NI,1:NJ,1:NK,0)-dtimel*Jacinv(1:NI,1:NJ,1:NK)*uvarx(1:NI,1:NJ,1:NK)
+    enddo
+
+  endif
 enddo !selvar
 
 !do k=NK,3,-1
 !  Hcontent=Hcontent + (3.9d03  *rho(NI/2,NJ/2,k)*T(NI/2,NJ/2,k,n) *(zf(NI/2,NJ/2,k+1)  -zf(NI/2,NJ/2,k) )*DL) 
-!  Hmixing =Hmixing  - (3.93d03)*rho(NI/2,NJ/2,k)*KzTr(NI/2,NJ/2,k)*( T(NI/2,NJ/2,k+1,n)- &
-! &         T(NI/2,NJ/2,k,n))/(DL*(zc(NI/2,NJ/2,k+1)-zc(NI/2,NJ/2,k)) ) ;
+!  Hmixing =Hmixing  - (3.93d03)*rho(NI/2,NJ/2,k)*KzTr(NI/2,NJ/2,k)*( T(NI/2,NJ/2,k+1,n)- T(NI/2,NJ/2,k,n))/(DL*(zc(NI/2,NJ/2,k+1)-zc(NI/2,NJ/2,k)) ) ;
 !end do
 
 #ifdef allow_particle
@@ -155,3 +141,5 @@ enddo !selvar
 return 
                                                                         
 END
+
+                                           
