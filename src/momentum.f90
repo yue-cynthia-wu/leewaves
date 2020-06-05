@@ -15,8 +15,10 @@ SUBROUTINE momentum(pcorr,step)
 
   call heat_flux(step)      ! Finds swr and qloss
   call wind_stress(step)    ! Finds stress_top_x , stress_top_y and stress_top
-  call calc_vertical_diffusivity  ! Calculates the vertical diffusivity for tracers and momentum  KzTr and KzMom (global arrays)
+!  call calc_vertical_diffusivity  ! Calculates the vertical diffusivity for tracers and momentum  KzTr and KzMom (global arrays)
 ! These routines are called just once per time step. 
+  KzTr(:,:,:) = 1.d-5
+  KzMom(:,:,:)= 1.d-5
 
   do ivb=1,3
 

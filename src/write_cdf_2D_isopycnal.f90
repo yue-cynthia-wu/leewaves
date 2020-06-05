@@ -1,7 +1,7 @@
 subroutine write_cdf_2D_isopycnal(sigma,counter_2d,n)
   !     ------------------------------------------------------------------
-USE header,ONLY : NI,NJ,NK,ntr,DL,LEN,stress_top_x,s,T,rho,u,v,Tr,consump,xc,yc,zc,zf,vor,strain,shear,freqN2,nconsume,  &
-     time_seconds,time_days,dirout,rc_kind
+USE header,ONLY : NI,NJ,NK,ntr,DL,LEN,stress_top_x,s,T,rho,u,v,Tr,consump,xc,yc,zc,zf, & 
+     vor,strain,shear,freqN2,nconsume,time_seconds,time_days,dirout,rc_kind
   !     writes the property T on isopycnal sig                            
 #include "netcdf.inc"                                                                        
       integer i,j,k,it,n 
