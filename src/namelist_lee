@@ -1,0 +1,93 @@
+
+&PARAM
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!! DOMAIN AND INITIAL PARAMETERS !!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+!---------- TIME SETTING ------------------------
+
+nsteps=1000,             ! number of time steps
+dtime_dim=54d0,           ! time step (in sec) try 216  for dx=1km
+
+!----------  HYDROSTATIC ------------------------
+
+fnhhy=0.0d0,               ! 1 is simulation is non-hydrostatic, 0 otherwise
+
+!--- PLANETARY VORTICITY ------------------------
+
+fplane=0,                  ! 1 if simulation is on a f-plane, 0 if f varies a sin(latitude)
+phi0deg=62.,                ! phi0deg is the central latitude (in degree)   f=1.3e-4
+
+! OTHER PARAMETERS, in ini_ST , set stratification (for example, use N=1.-3per s)
+! ini_topog, wavelength of topog between 1.25 and 10 km. 
+!---------- GRID SETTING ------------------------
+
+dx=200.d0,                    ! resolution in the x direction (in m) 
+dy=200.d0,                    ! resolution in the y direction (in m)
+dztop_dim=5,             ! uppermost cell thickness (in m)
+dzbot_dim=5,             ! lowermost cell thickness (in m)
+
+lv_flat_bottom=.FALSE.,     ! if TRUE, the bottom will be flat, otherwise, topog will be computed from the subroutine topog
+total_depth=2000d0,         ! depth of the domain (in m). Only used if lv_flat_bottom.
+!Leg2 total_depth=1000d0,        ! depth of the domain (in m). Only used if lv_flat_bottom.
+use_Shchepetkin=.TRUE.,   ! switch for the baroclinic pressure term: 
+                           !   TRUE: Shchepetkin scheme is used.
+                           !   FALSE: Song scheme is used (only works for flat bottom).
+
+!- DIFFUSION AND FRICTION -----------------------
+
+Kx=0.3d0,                   ! diffusion in the horizontal, x direction (in m*m/s)   ! 1 m2/s for run1
+Ky=0.3d0,                   ! diffusion in the horizontal, y direction (in m*m/s)
+RR=0.000d0,              ! bottom friction (in m/s) 
+
+!--------  OUTPUT SETTING -----------------------
+
+out1d_int=200000000,    ! frequency of the 1D output (in number of timesteps)
+out2d_int=10,            ! frequency of the 2D output (in number of timesteps)
+out3d_int=100,            ! frequency of the 3D output (in number of timesteps)
+
+dirout="/Users/amala/local/MODEL/output/",
+                           ! output directory
+
+
+!---------- PICKUP OPTION -----------------------
+
+pickup_int=1000,           ! (W) frequency of writing pickup files 
+pickup_step=-999/          ! (R) unique time step at which the pickup file will be read and used to re-start the model
+                           !      if the simulation does not start from a previous pickup file, set pickup_step to a negative value.
+&
+
+&traj
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!! PARTICLES PARAMETERS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! Will only be read if allow_particle is defined in inc/cppdefs.h
+
+
+NPR=3000,                   ! number of particles
+ini_particle_time=1,       ! time step for particle initialization
+parti_file_num=30,          ! number of output files
+parti_outfreq=50,          ! frequency of particles output (in number of timesteps)
+ 
+pcx=0.5,                   !     Four parameters to  
+pcy=0.5,                   !      customize the 
+pcz=0.8,                   !      initialization of
+pcr=0.4/                   !      the particles
+&
+
+
+&user
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!! USER PARAMETERS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! These variables can be set by the user to customize simulations.
+! For instance, T_ini=user1*T_prime+T_bckgrd
+
+user1=0.,
+user2=0.,
+user3=0.,
+user4=0.,
+user5=0.,
+user6=0.,
+user7=0.,
+user8=0./
