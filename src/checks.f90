@@ -64,7 +64,7 @@ subroutine checks
      write(6,*) "# Restoration of the zonal mean velocities DISABLED"
    end if
    if (restore_sT .OR. restore_u) then
-     write(6,"(A,F8.0,A)") " # Restoring time scale:", restore_time," sec"
+     write(6,"(A,F5.0,A)") " # Restoring time scale:", restore_time," sec"
      write(6,"(A,I5,A)")   " # Restoration starts at", restore_step," step"
    end if
 

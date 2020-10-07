@@ -25,6 +25,8 @@ subroutine mixing_vertical(var,vardif,m,step,iv_compute_kzl)
   REAL(kind=rc_kind) :: wgt,day,ztransit,zextent,thy                                         
   REAL(kind=rc_kind), parameter :: Kzmax= 1.d-3, KzmaxTr=1.d-3 !  The viscosity is Kz*Kzmax 
 
+  INTEGER OMP_GET_THREAD_NUM,OMP_GET_NUM_THREADS,CHUNK,NPROC
+
   facb = RR*DL      ! Linear Drag                                                       
   ! facb = RR*DL*UL ! Quadratic drag                                                    
 
@@ -76,6 +78,7 @@ subroutine mixing_vertical(var,vardif,m,step,iv_compute_kzl)
    endif
 #endif
 
+!$OMP PARALLEL DO PRIVATE(j,i,k,dvardzfc,dfactor) SHARED(vardif) COLLAPSE(2)
 
   do j=1,NJ 
     do i=1,NI 
@@ -149,6 +152,7 @@ subroutine mixing_vertical(var,vardif,m,step,iv_compute_kzl)
 
     end do ! i
   end do ! j
+!$OMP END PARALLEL DO                                                                   
 
 return 
 END                                           

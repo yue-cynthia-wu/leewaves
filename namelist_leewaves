@@ -10,7 +10,7 @@ dtime_dim=54,              ! time step (in sec) try 216 for dx=1km. 216 for 30 p
 
 restore_sT=.TRUE.,
 restore_u =.TRUE.,
-restore_time=86400,         ! restoring time scale (in sec)
+restore_time=1800,         ! restoring time scale (in sec)
 restore_step=0,            ! step when restoring is turned on
 
 !-----------------  HYDROSTATIC -----------------
@@ -26,18 +26,16 @@ Umax=0.18,
 !----------------- GRID SETTING -----------------
 
 dx=100,                    ! resolution in the x direction (in m) 
-dy=100,                    ! resolution in the y direction (in m)
+dy=200,                    ! resolution in the y direction (in m)
 dztop_dim=5,               ! uppermost cell thickness (in m)
 dzbot_dim=5,               ! lowermost cell thickness (in m)
 !pfac=1.d-12,              ! vertical stretching factor
 depmean_dim=2000.,         ! mean depth of the topography
-
 distance=75.,              ! distance between the flat surface and the mean depth of the topography, for Nz=64,128,256
 !distance=35.,              !   for Nz=32
-
-!Nf=15,                     ! # of corrugated layers, excluding ghost layer but including bottom boundary layer, for Nz=256!!
+!Nf=15,                     ! # of corrugated layers, excluding ghost layer but including bottom boundary layer, for Nz=256
 Nf=7,                      !   for Nz=128
-!Nf=3,                      !   for Nz=32,64
+!Nf=3,                      !   for Nz=64,32
 
 lv_flat_bottom=.FALSE.,    ! if TRUE, the bottom will be flat, otherwise, topog will be computed from ini_topog
 use_Shchepetkin=.FALSE.,   ! switch for the baroclinic pressure term: 
@@ -46,17 +44,15 @@ topo_wavelength=1200.,
 topo_amplitude =10.,
 
 !------------ DIFFUSION AND FRICTION ------------
-biharmonic_horizontal=.True.,
+biharmonic_horizontal=.TRUE.,
 
-!Kx=.003, Ky=.003,          ! diffusion in the horizontal, x & y direction (in m*m/s)
 !Kx=4.d-3, Ky=4.d-3,        ! diffusion in the horizontal, x & y direction (in m*m/s)
 
-binu=100,                   ! biharmonic diffusion in the horizontal, y direction (in m^4/s).
+binu=50,                   ! biharmonic diffusion in the horizontal, y direction (in m^4/s).
 !binu=2500,
 
 !KzMom=5d-4, KzTr=5d-4,     ! for Nz=256        ! diffusion in the vertical for momentum & tracers (in m*m/s)
 KzMom=1d-3, KzTr=1d-3,     ! for Nz=128 
-!KzMom=1.5d-2, KzTr=1.5d-2, !for Nz=32
 
 RR=0,                      ! bottom friction (in m/s) 
 
@@ -64,9 +60,9 @@ RR=0,                      ! bottom friction (in m/s)
 
 out1d_int=200000000,       ! frequency of the 1D output (in number of timesteps)
 out2d_int=400,             ! frequency of the 2D output (in number of timesteps) 50 for 3 hours
-out3d_int=1600,             ! frequency of the 3D output (in number of timesteps) 400 for 1 day
-             dirout="/Users/yuewu/master/output/lee_",  ! output directory
-!dirout="/vortexfs1/scratch/yuewu/master/output/lee_", 
+out3d_int=800,             ! frequency of the 3D output (in number of timesteps) 400 for 1 day
+!             dirout="/Users/yuewu/master/output/lee_",  ! output directory
+dirout="/vortexfs1/scratch/yuewu/output/lee_", 
 !---------------- PICKUP OPTION -----------------
 
 pickup_int=100,            ! (W) frequency of writing pickup files 

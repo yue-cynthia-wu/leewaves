@@ -31,6 +31,7 @@ SUBROUTINE momentum(pcorr,step)
       if(.NOT.(use_Shchepetkin)) then 
          CALL rpevalgrad_Song(ivf) 
       else
+         CALL rpevalgrad_Song(ivf) 
          CALL rpevalgrad_Sche(ivf);
          drpx(1:NI,1:NJ,1:NK)=ru4_Sche(1:NI,1:NJ,1:NK);  drpy(1:NI,1:NJ,1:NK)=rv4_Sche(1:NI,1:NJ,1:NK); 
          grpifc(0:NI,1:NJ,1:NK)=ru2_Sche(0:NI,1:NJ,1:NK); grpjfc(1:NI,0:NJ,1:NK)=rv2_Sche(1:NI,0:NJ,1:NK);

@@ -12,9 +12,13 @@ subroutine mixing_horizontal(var,vardif)
   REAL(kind=rc_kind) :: vyj,uxi,fac,ubylsq,wbylsq 
   REAL(kind=rc_kind) :: Kx_l,Ky_l(NJ),e1inv,yfrac,y0,y0inv,yend,yy,KxPassTr                                                     
 
-  Kx_l= Kx; KxPassTr= Kx;                                                                         
+  INTEGER OMP_GET_THREAD_NUM,OMP_GET_NUM_THREADS,CHUNK,NPROC
+
+  Kx_l= Kx; KxPassTr= Kx; 
+                                                                        
   Ky_l(1:NJ) = Ky 
 
+!$OMP PARALLEL DO PRIVATE(k,i,j,dvardyfc) SHARED(vardif) COLLAPSE(2)                                                                       
   do k=1,NK 
     do i=1,NI 
       do j=1,NJ-1 
@@ -27,7 +31,9 @@ subroutine mixing_horizontal(var,vardif)
       end do
     end do
   end do
+!$OMP END PARALLEL DO
                                                                         
+!$OMP PARALLEL DO PRIVATE(k,j,i,dvardxfc) SHARED(vardif) COLLAPSE(2)                                                                       
   do k=1,NK 
     do j=1,NJ 
       do i=1,NI-1 
@@ -40,7 +46,9 @@ subroutine mixing_horizontal(var,vardif)
         vardif(i,j,k)= vardif(i,j,k)+ Kx_l*ux(i,j)*(dvardxfc(i)-dvardxfc(i-1))                
       end do
     end do
-  end do 
+  end do
+!$OMP END PARALLEL DO                                                                       
+ 
                                                                         
   fac= 1.0/(UL*LEN) 
 

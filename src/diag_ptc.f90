@@ -6,12 +6,9 @@ subroutine diag_ptc(ptc)
    integer i,j,k
    REAL(kind=rc_kind), dimension(0:NI+1,0:NJ+1, 0:NK+1)  :: ptc
 
-   if(.NOT.(use_Shchepetkin)) then ! calculates baroclinic press gradients
-       CALL rpevalgrad_Song(0) 
-   else
-       CALL rpevalgrad_Sche(0);
-   endif
-    
+   ! call rpevalgrad_Song(0)
+   call rpevalgrad_Sche(0)
+
    do k=1, NK
       do j=1, NJ
       do i=1, NI

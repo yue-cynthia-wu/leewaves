@@ -32,8 +32,7 @@ INTEGER, PARAMETER :: ntr = 1, nconsume = 1
 ! =====================================================================================================     
 !  INTEGER,PARAMETER :: NI=96,  NJ=96, NK=32,  ngrid=4, maxout=379472,  maxint=336960,  int1=294912  ! good      
 !  INTEGER,PARAMETER :: NI=96,  NJ=96, NK=64,  ngrid=4, maxout=732992 , maxint=673920,  int1=589824  ! IN USE leewaves
-!  INTEGER,PARAMETER :: NI=96,  NJ=96, NK=128, ngrid=4, maxout=1440032, maxint=1347840, int1=1179648 ! good
-  INTEGER, PARAMETER :: NI=      96,NJ=     192,NK=     128,ngrid=       6,maxout =  2847072, maxint =  2696328,int1= 2359296
+  INTEGER,PARAMETER :: NI=96,  NJ=96, NK=128, ngrid=4, maxout=1440032, maxint=1347840, int1=1179648 ! good
 !  INTEGER,PARAMETER :: NI=96,  NJ=96, NK=256, ngrid=4, maxout=2854112, maxint=2695680, int1=2359296 ! good
 !  INTEGER, PARAMETER :: NI=96,  NJ=192,NK=256, ngrid=6, maxout=5642688, maxint=5392656, int1=4718592   
    
