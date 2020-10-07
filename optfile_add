@@ -1,3 +1,2 @@
-
-! #lobj_additional= calc_vertical_diffusivity.o 
+lobj_additional= diag_ptc.o intpol_pt.o mixing_horizontal_biharmonic.o
 
