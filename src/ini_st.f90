@@ -1,89 +1,89 @@
-      subroutine ini_st
-!     --------------------
-!     DESCRIPTION
-!     Initializes density for model using an analytic 
-!     density function, derived from an N^2 profile
-!     Across-front use the TANH profile with tightness
-!     as a measure of frontal spread
-!     Larger the factor, tighter the front and larger b_xx.
+subroutine ini_st
+!    --------------------
+!    DESCRIPTION
+!    Initializes density for model using an analytic
+!    density function, derived from an N^2 profile
+!    Across-front use the TANH profile with tightness
+!    as a measure of frontal spread
+!    Larger the factor, tighter the front and larger b_xx.
 
-!     --------------------
-!     SET VARIABLES
-      USE header 
-      implicit none 
-      REAL(kind=rc_kind)  :: alpha, T_ocean, sbkgrnd,dtemp, &
-           n2bkgrnd,dTdz,wiggles, amplitude,thy,grav,dz,dep_front
-      parameter (alpha= 1.d-4, grav=10.) !@ alpha: thermal expansion coefficient
-      integer  i,j,k,n
-      yfront = 0.5*(yc(NJ+1) +yc(0)) ! yfront is the distance of the front from the coast
+   USE header 
+   implicit none 
+   integer i,j,k,n
+   REAL(kind=rc_kind) :: grav,f,n2bkgrnd,dTdz,dz
+   REAL(kind=rc_kind) :: thy,z_topog,z_front,z_fac,y_center,y_front,dUdz_max,dT
+   parameter (grav=9.81, f=1.3d-4) !@ alpha: thermal expansion coefficient
 
-!     --------------------
-!     DECLARE VARIABLES
-      ! T_ocean = 4.0 !T_ocean is the deep temperature    
-      T_ocean = 6.0  !T_ocean is the surface temperature    
-      sbkgrnd = 35.0 ! constant salinity
-      tightness = 0.06d0  
-      n2bkgrnd = 1.0d-6    ! rad/s
-      dTdz = n2bkgrnd/(alpha* grav)     ! d(rho)/dz = N2bkgrnd *R0/grav      
-      s = sbkgrnd     !set salnity constant,  front is only in temperature
-
-!     --------------------
-      ! Cross-front gradients
-      ! drho cannot exceed the vertical temperature change dz*(R0*n2bkgrnd/grav)
-      drho = 0.002/7.3              !this is delta rho across the front 
-      dtemp= -drho/(alpha*1000.)    ! this is delta temp , e.g. 1 deg C
-      ! -negative dtemp gives eastward flow with f positive. 
-!     --------------------
-      n=0
-      ! Set up constant stratification
-      ! T(:,:,0,n) = T_ocean
-      T(:,:,NK+1,n) = T_ocean
-      do j=0,NJ+1
-         do i=0,NI+1
-            do k=NK,0,-1
-               dz = (zc(i,j,k+1) - zc(i,j,k))*DL
-               T(i,j,k,n) = T(i,j,k+1,n) - dtdz* dz
-            end do
+   !---------------------------------------
+   !           Background s
+   !---------------------------------------
+   s = 35.0     !set salnity constant, front is only in temperature
+   !---------------------------------------
+   !      Set up constant stratification
+   !---------------------------------------
+   n2bkgrnd = 1.0d-6        ! in rad/s
+   dTdz = -n2bkgrnd*R0/grav ! d(rho)/dz = -N2bkgrnd *R0/grav      
+   n=0
+   T(:,:,NK+1,n) = R0       ! surface density
+   do j=0,NJ+1
+      do i=0,NI+1
+         do k=NK,0,-1
+            dz = (zc(i,j,k+1) - zc(i,j,k))*DL
+            T(i,j,k,n) = T(i,j,k+1,n) - dTdz*dz
          end do
       end do
+   end do
 
-!     --------------------
-!     ADD FRONT
-!     A frontal region is introduced to the channel.
- 
-      dep_front= 0.05*sum(D)/dble((NI+2)*(NJ+2)) !! CHAMGED
-      do j=0,NJ+1
-         do i=0,NI+1
- 
-!     WIGGLE in FRONT
-            wiggles=1.d0
-            amplitude= 0.0d0
-            yfront= 0.5d0*(yc(NJ+1) +yc(0))       & 
-                 + amplitude*dsin(2.d0*PI*xc(i)/  & 
-                 ( 0.5*(xc(NI+1)+xc(NI))/wiggles) )
-           thy = tanh(tightness*(yc(j)-yfront)*PI)
-           do k=0,NK+1
-!               z= DL*zc(i,j,k)
-!                  if (z.ge.-z1) then 
-!                     slfacnew = slfac
-!                  else if (z.ge.-z2) then
-!                     slfacnew = slfac*(z+z2)/(z2-z1)
-!                  else 
-!                     slfacnew = 0.d0
-!                  end if
-!                  s(i,j,k,0)= slfacnew*thy + s(i,NJ,k,0)
-              if (zc(i,j,k).lt.dep_front) then
-                 T(i,j,k,0) = ((-zc(i,j,k)+dep_front)/dep_front)*dtemp*thy + T(i,NJ,k,n)
-                 ! dtemp is set negative to generate eastward flow. f is positive
-              else
-                 T(i,j,k,0) = T(i,NJ,k,n)
-              end if
-            end do
-         end do
-      end do
+   write(6,"(A,4(D15.7))") " # T (top/bot): " ,T(i,j,k,n)-R0,T(i,j,1,n)-R0
 
-      T_ini(:,:,:) = T(:,:,:,0)
-      s_ini(:,:,:) = s(:,:,:,0)
+! =================================================================================================
+!                                          Add front
+! =================================================================================================
+   z_topog = -depmean_dim/DL        ! non-dimensional z-coordinate of the averaged topography
+   z_front = 0.05*z_topog           ! non-dimensional z-coordinate of front's upper bound
+   dUdz_max= 2*Umax/(z_topog-z_front)! max. value of dU/dz at the central bottom, m/s per km
+   
+   write(6,"(A,1(D15.7))") " # dUdz: " ,dUdz_max/1000
 
-      return
-      end
+   y_center= 0.5 *(yc(NJ+1) +yc(0)) ! non-dimensional y-coordinate of front's centerline
+   y_front = 0.1 *(yc(NJ+1) +yc(0)) ! non-dimensional y-coordinate of front's lateral bound (east)
+   tightness= PI/(y_front-y_center) ! per km
+   dT=f*dUdz_max*R0/grav/tightness  ! density difference across the front
+
+!    write(6,"(A,4(D15.7))") " # y1, yN, Ly, dy" ,yc(1),yc(NJ),yc(NJ)-yc(0), yc(2)-yc(1)
+   write(6,"(A,2(D15.7))") " # tightness, dT: ", tightness,dT
+
+
+   do j=0,NJ+1
+   do i=0,NI+1
+      thy = tanh((yc(j)-y_center)*tightness) ! between +-1
+      do k=0,NK+1
+         if (zc(i,j,k).lt.z_front) then
+            z_fac      = (zc(i,j,k)-z_front)/(z_topog-z_front) ! between 0 and 1
+            T(i,j,k,0) = z_fac*dT*thy + T(i,NJ,k,n)
+         else
+            T(i,j,k,0) = T(i,NJ,k,n)
+         end if
+      end do ! end k
+   end do ! end i
+   end do ! end j
+
+! =================================================================================================
+!                                        Save initial s, T
+! ================================================================================================= 
+   do j=0,NJ+1
+   do k=0,NK+1
+      T_ini(j,k)= 0.d0
+      do i=0,NI+1
+         T_ini(j,k)= T_ini(j,k) + T(i,j,k,0)
+      enddo
+      T_ini(j,k)= T_ini(j,k)/(dble(NI)+2)
+      s_ini(j,k)= 35.0
+   enddo
+   enddo
+   
+   write(6,"(A,4(D15.7))") " # T (east/west): " ,T(NI/2,1,1,0)-R0,T(NI/2,NJ,1,0)-R0
+
+   
+   return
+end
