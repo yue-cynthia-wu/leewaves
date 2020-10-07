@@ -11,18 +11,18 @@ USE header
 ! ------------------------------------------------------------------
    implicit none
    integer i,j,k
-   REAL(kind=rc_kind) :: zpd,hpd,hpdinv,hu,hv,hx,hy,hxpdx,hypdy,z,temp,       &
-      be2,wxk,wyk,d2,sig,ep,epm1,dnkm1,dnkm1p,dnf,dnfp,Df,        &
+   REAL(kind=rc_kind) :: zpd,hpd,hpdinv,hu,hv,hx,hy,hxpdx,hypdy,z,temp, &
+      be2,wxk,wyk,d2,sig,ep,epm1,dnkm1,dnf,Df,              &
       g13(0:NI+1,0:NJ+1,0:NK+1),g23(0:NI+1,0:NJ+1,0:NK+1)
                           
    be2= beta*EPS*EPS 
-   epm1= exp(pfac) -1.d0 
-!    ep = pfac*exp(1.d0) 
    dnkm1= dble(NK-1)
-   dnkm1p= dnkm1/pfac 
-   dnf = Nf
-   dnfp= dnf/pfac
-   Df=(-depmean_dim+distance)/DL
+   dnf= Nf
+   Df= (-depmean_dim+distance)/DL
+   
+#ifdef sigma_stretch
+   epm1= exp(pfac)-1.d0 
+#endif
 
    ! ------------------------------------------------------------------
    !				        Derivatives of sigma (Upper Layers)
@@ -41,8 +41,11 @@ USE header
                 sig= dble(k)-0.5d0
                 z= zc(i,j,k)
                 zpd= z +dztop
+#ifdef sigma_stretch
                 wz(i,j,k)= -epm1*(dnkm1-dnf)/pfac/( epm1*zpd +(Df+dztop) ) !!!
-
+#else
+                wz(i,j,k)= (dnkm1-dnf)/(-dztop-Df) !!!
+#endif
                 Jac(i,j,k)= J2d(i,j)/wz(i,j,k)
 
                 ! wx(i,j,k)= wz(i,j,k)*(z+dztop)/(Df+dztop)*Ddx(i,j) ! evenly between -dztop and Df
@@ -60,7 +63,11 @@ USE header
                z= zc(i,j,k)  !!! use z at center
                zpd= z +dztop
                wt(i,j,k)= 0.d0
-               wzk(i,j,k)= -epm1*(dnkm1-dnf)/pfac/( epm1*zpd +(Df+dztop) ) !!!
+#ifdef sigma_stretch
+               wzk(i,j,k)= -epm1*(dnkm1-dnf)/pfac/( epm1*zpd+(Df+dztop) ) !!!
+#else
+               wzk(i,j,k)= (dnkm1-dnf)/(-dztop-Df) !!!
+#endif
             end do ! end k
 
             wzk(i,j,NK-1)= 0.5*( wz(i,j,NK) + wz(i,j,NK-1) )   ! Why take the average ???
@@ -72,7 +79,7 @@ USE header
                zpd= z +dztop
 
    			   ! temp= epm1*(dnkm1-dnf)/pfac/( epm1*zpd +(Df+dztop) ) *(z+dztop)/(Df+dztop)
-        	   ! wxk= Ddx(i,j)*temp
+        	      ! wxk= Ddx(i,j)*temp
                ! wyk= Ddy(i,j)*temp
 
                wxk= 0.d0
@@ -91,7 +98,6 @@ USE header
 ! ------------------------------------------------------------------
 #ifdef fixed_bottom_thickness
       dnf= dble(Nf-1)    !!! ADDED
-      dnfp= dnf/pfac     !!! ADDED
 #else
       dzbot = 0.d0
 #endif
@@ -110,8 +116,11 @@ USE header
             sig= dble(k)-0.5d0
             z= zc(i,j,k) 
             zpd= z +dztop 
-            wz(i,j,k)= -epm1*dnfp/( epm1*(z-Df) +(D(i,j)+dzbot-Df) ) !!!
-
+#ifdef sigma_stretch
+            wz(i,j,k)= -epm1*dnf/pfac/( epm1*(z-Df)+(D(i,j)+dzbot-Df) ) !!!
+#else
+            wz(i,j,k)= dnf/(Df-D(i,j)-dzbot) !!!
+#endif
             Jac(i,j,k)= J2d(i,j)/wz(i,j,k) 
 
             wx(i,j,k)= wz(i,j,k)*(z-Df)/(D(i,j)+dzbot-Df)*Ddx(i,j) ! evenly between Df and D
@@ -127,7 +136,11 @@ USE header
             z= zc(i,j,k)  !!! Why use z at center ??? 
             zpd= z +dztop
             wt(i,j,k)= 0.d0
-            wzk(i,j,k)= -epm1*dnfp/( epm1*(z-Df) +(D(i,j)+dzbot-Df) ) !!!
+#ifdef sigma_stretch
+            wzk(i,j,k)= -epm1*dnf/pfac/( epm1*(z-Df)+(D(i,j)+dzbot-Df) ) !!!
+#else
+            wzk(i,j,k)= dnf/(Df-D(i,j)-dzbot)
+#endif
          end do ! end k
 
          ! -----------------------  X, Y FACE  -----------------------
@@ -136,8 +149,11 @@ USE header
             sig= dble(k)
             z= zf(i,j,k)
             zpd= z +dztop
-
-            temp= epm1*dnfp/( epm1*(z-Df) +(D(i,j)+dzbot-Df) ) *(z-Df)/(D(i,j)+dzbot-Df) !!!
+#ifdef sigma_stretch
+            temp= epm1*dnf/pfac/( epm1*(z-Df)+(D(i,j)+dzbot-Df) ) *(z-Df)/(D(i,j)+dzbot-Df) !!!
+#else
+            temp= -dnf/(Df-D(i,j)-dzbot) *(z-Df)/(D(i,j)+dzbot-Df)                       !!!
+#endif
             wxk= Ddx(i,j)*temp
             wyk= Ddy(i,j)*temp
             gqk(i,j,k,1)= qpr*Jac(i,j,k)*(ux(i,j)*wxk +uy(i,j)*wyk)

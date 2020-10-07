@@ -7,14 +7,22 @@
       !- DEFINITION - 
       !--------------
 
-  NAMELIST /PARAM/ nsteps,dtime_dim,fnhhy,fplane,phi0deg,&
+  NAMELIST /PARAM/ nsteps,dtime_dim,&
+                   restore_sT,restore_u,&
+                   restore_time,restore_step,&
+                   fnhhy,fplane,phi0deg,Umax,&
                    dx,dy,dztop_dim,&
 #ifdef fixed_bottom_thickness
                    dzbot_dim,&
 #endif		  
-                   pfac,depmean_dim,distance,Nf,&
-                   lv_flat_bottom,total_depth,use_Shchepetkin,&
-                   Kx,Ky,binu,RR,&
+#ifdef sigma_stretch
+                   pfac,&
+#endif
+                   depmean_dim,distance,Nf,&
+                   lv_flat_bottom,use_Shchepetkin,&
+                   topo_wavelength,topo_amplitude,&
+                   biharmonic_horizontal,binu,Kx,Ky,&       
+                   KzMom,KzTr,RR,&
                    out1d_int,out2d_int,out3d_int,dirout,&
                    pickup_int,pickup_step
 

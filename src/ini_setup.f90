@@ -66,14 +66,14 @@ SUBROUTINE ini_setup(pcorr)
      g22(i,j)=  vx(i,j)*vx(i,j) + vy(i,j)*vy(i,j) 
    ENDDO
  ENDDO
-    
-    
+   
+
  ! DEPTH OF EVERY MODEL COLUMN
 
  if(.NOT.(lv_flat_bottom)) then
    call ini_topog
   else
-   dep = total_depth
+   dep = depmean_dim
    D(:,:)= -dep*DLinv   ! D(i,j) is -ve and  non-dim by DL
    CALL smooth          ! Compute partial derivatives dD/dx,dD/dy 
                         ! Does not smooth anything.   
@@ -106,8 +106,6 @@ SUBROUTINE ini_setup(pcorr)
    ffc(:,j)= fconst*sin(latrad(j)) 
    bbc(:,j)= fnhhy*fconst*cos(latrad(j)) 
  ENDDO
-
-
 
  !--------------------------------------------------
  ! INITIALIZATION OF THE VARIABLES
@@ -154,7 +152,7 @@ SUBROUTINE ini_setup(pcorr)
      do k=-1,NK+1;WRITE(60,*) k,zf(10,10,k)*1000.; end do;
    CLOSE(60) 
  else
-   write(6,*) 'not flat bottom'
+!    write(6,*) 'not flat bottom'
    OPEN (unit=60,file=TRIM(dirout)//'zgrid.out')  !     write out z-grid                                                  
      WRITE(60,*) '# vertical grid -- at i=10,j=10, NO FLAT BOTTOM' 
      do k=0,NK+1; WRITE(60,*) k,zc(10,10,k)*1000.; end do;
@@ -169,8 +167,6 @@ SUBROUTINE ini_setup(pcorr)
  CALL ini_h           ! initialize free surface h
 
  CALL findzall        ! find z again
-
-
 
  advecpv(:)= 0.d0 
  friction(:)= 0.d0 

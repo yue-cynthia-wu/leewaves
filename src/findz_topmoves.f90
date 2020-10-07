@@ -10,9 +10,11 @@ USE header
    implicit none
    integer i,j,k
    REAL(kind=rc_kind) :: sigma,epm1,epm1inv,dnkm1,dnf,dnfinv,hpd,xfac,Df
-   
-   epm1= exp(pfac) -1.d0 
-   epm1inv= 1.d0/epm1 
+ 
+#ifdef sigma_stretch 
+   epm1= exp(pfac)-1.d0 
+   epm1inv= 1.d0/epm1
+#endif
    dnkm1= dble(NK-1) 
    dnf  = dble(Nf)
    Df=(-depmean_dim+distance)/DL
@@ -51,14 +53,22 @@ USE header
          do k=Nf+1,NK-1
             sigma= dble(k)-0.5
             xfac = (dnkm1-sigma)/(dnkm1-Nf)
+#ifdef sigma_stretch
             zc(i,j,k) = (exp(pfac*xfac)-1.d0)*epm1inv*(Df+dztop) - dztop
+#else            
+            zc(i,j,k) = xfac*(Df+dztop) - dztop
+#endif
          end do
 
          ! ----- FACES -----
          do k=Nf,NK-2
             sigma= dble(k)
             xfac = (dnkm1-sigma)/(dnkm1-Nf)
+#ifdef sigma_stretch            
             zf(i,j,k) = (exp(pfac*xfac)-1.d0)*epm1inv*(Df+dztop) - dztop
+#else            
+            zf(i,j,k) = xfac*(Df+dztop) - dztop
+#endif
          end do
 
 ! ---------------------------------------------------------------------------------
@@ -77,8 +87,12 @@ USE header
 #ifdef fixed_bottom_thickness
             sigma= dble(k-1)-0.5
 #endif 
-            xfac = (dnf -sigma)*dnfinv 
+            xfac = (dnf-sigma)*dnfinv 
+#ifdef sigma_stretch
             zc(i,j,k)= (exp(pfac*xfac)-1.d0)*epm1inv*(D(i,j)+dzbot-Df) +Df                               
+#else
+            zc(i,j,k)= xfac*(D(i,j)+dzbot-Df) +Df                               
+#endif
          end do
 
          ! ----- FACES -----
@@ -87,8 +101,12 @@ USE header
 #ifdef fixed_bottom_thickness
             sigma= dble(k-1)
 #endif 
-            xfac = (dnf -sigma)*dnfinv 
+            xfac = (dnf-sigma)*dnfinv 
+#ifdef sigma_stretch
             zf(i,j,k)= (exp(pfac*xfac)-1.d0)*epm1inv*(D(i,j)+dzbot-Df) +Df                               
+#else
+            zf(i,j,k)= xfac*(D(i,j)+dzbot-Df) +Df                               
+#endif
          end do
 
 ! ---------------------------------------------------------------------------------
