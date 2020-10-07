@@ -32,14 +32,12 @@ subroutine checks
    stop 
  end if 
 
- 
+ ! =======================================================================================
  if(verbose) then
    write(6,*) "                                                                          "
    write(6,*) "##########################################################################"
-   write(6,*) "#                                                                         "
-   write(6,*) "#----------------------------  MODEL SETTING  ----------------------------"
-   write(6,*) "#                                                                         "
-   write(6,*) "##########################################################################"
+   write(6,*) "                                                                          "
+   write(6,*) "----------------------------  MODEL SETTING  -----------------------------"
    write(6,*) "                                                                          "
    write(6,*) "# time step x number of time steps = length of simulation "
   
@@ -51,9 +49,68 @@ subroutine checks
    else
      write(6,"(A3,F5.0,A13,I6,A12,F7.3,A2)") " # ",dtime_dim," sec x       ",nsteps,"          = ",nsteps*dtf*TL/3600., " h"
    endif
+   
+   ! -------------------------------------------------------------------------------------
+!    write(6,*) "                                                  "
+   
+   if (restore_sT) then
+     write(6,*) "# Restoration of salinity and temperature  ENABLED" 
+   else
+     write(6,*) "# Restoration of salinity and temperature  DISABLED" 
+   end if
+   if (restore_u) then
+     write(6,*) "# Restoration of the zonal mean velocities ENABLED" 
+   else
+     write(6,*) "# Restoration of the zonal mean velocities DISABLED"
+   end if
+   if (restore_sT .OR. restore_u) then
+     write(6,"(A,F5.0,A)") " # Restoring time scale:", restore_time," sec"
+     write(6,"(A,I5,A)")   " # Restoration starts at", restore_step," step"
+   end if
 
-   write(6,*) "                                                  "
-
+   ! =====================================================================================
+   write(6,*) "                                                                          "
+   write(6,*) "-------------------------  GRID CHARACTERISTICS  -------------------------"
+   write(6,*) "                                                                          "
+   if(rect) then
+     write(6,*) "# Rectangular grid" 
+    else 
+     write(6,*) "# Non-rectangular grid"
+   endif
+#ifdef sigma_stretch
+   write(6,"(A,D10.3)")     " # Vertical grid stretching factor     : ",pfac
+#else
+   write(6,*)               "# No vertical stretching."
+#endif
+   write(6,"(A,3(I8))")     " # Number of grids NI, NJ, NK          : ",NI,NJ,NK
+   write(6,"(A,2(F8.2),A2)")" # Grid size delta_x, delta_y          : ",dx,dy, " m"
+#ifdef fixed_bottom_thickness
+   write(6,"(A,2(F8.2),A2)")" # Top & bottom layer thickness        : ",dztop*DL,dzbot*DL, " m" 
+#else
+   write(6,"(A,F8.2,A2)")   " # Top & bottom layer thickness        : ",dztop*DL, "variable m" 
+#endif
+   
+   ! ------------------------------------------------------------------------------------- 
+!    write(6,*) "                                                     "
+   if(lv_flat_bottom) then
+     write(6,"(A,F8.2,A2)") " # Flat topography, depth              : ",depmean_dim," m"
+   else
+     write(6,"(A,F8.2,A2)") " # Topographic wavelength              : ",topo_wavelength, " m"
+     write(6,"(A,F8.2,A2)") " # Topographic amplitude               : ",topo_amplitude, " m"
+     write(6,"(A,F8.2,A2)") " # Averaged depth of the topography    : ",depmean_dim, " m"     
+     write(6,"(A,F8.2,A7,F8.2,A2)") " # Sloping topography, varying between : ",&
+                                      & MINVAL(zf(:,:,0)*DL)," m and ",MAXVAL(zf(:,:,0)*DL), " m"
+     write(6,"(A,F8.2,A2)") " # Total thickness of corrugated layers: ",distance, " m"
+     write(6,"(A,I8)")      " # Number of corrugated layers         : ",Nf 
+   endif
+!    write(6,"(A,D10.3)")     " # Initial density gradient            : ",ini_drho
+!    write(6,"(A,D10.3)")     " # Initial density tightness           : ",ini_tight
+   
+   ! =====================================================================================
+   write(6,*) "                                                                          "
+   write(6,*) "----------------------  SIMULATION CHARACTERISTICS  ----------------------"
+   write(6,*) "                                                                          "
+   
    if(periodicew) then
      write(6,*) "# Periodic in the EW direction" 
    else 
@@ -76,31 +133,40 @@ subroutine checks
      write(6,*) "# Non-hydrostatic simulation"
    else
      write(6,*) "# Hydrostatic approximation is used"
-  
    endif
 
    IF(use_Shchepetkin) then
      write(6,*) "# Shchepetkin scheme ENABLED"
    ELSE
-     if(lv_flat_bottom) then
+!      if(lv_flat_bottom) then
+!        write(6,*) "# Shchepetkin scheme DISABLED"
+!        write(6,*) "# Song scheme ENABLED"
+!      else
        write(6,*) "# Shchepetkin scheme DISABLED"
-       write(6,*) "# Song scheme ENABLED"
-     else
-       write(6,*) "# Shchepetkin scheme DISABLED"
-       write(6,*) "------"
-       write(6,"(A97)") "Error: You attempt to run a simulation with a non-flat bottom with the Song scheme.              "
-       write(6,"(A97)") "         To use a baroclinic pressure term computation scheme that is accurate on sloping bottom," 
-       write(6,"(A97)") "          use Shchepetkin scheme: in namelist, use_Shchepetkin=.TRUE.                            "
-       STOP
-     endif
+!        write(6,*) "------"
+!        write(6,"(A97)") "Error: You attempt to run a simulation with a non-flat bottom with the Song scheme.              "
+!        write(6,"(A97)") "         To use a baroclinic pressure term computation scheme that is accurate on sloping bottom,"
+!        write(6,"(A97)") "          use Shchepetkin scheme: in namelist, use_Shchepetkin=.TRUE.                            "
+!        STOP
+!      endif
    ENDIF
-
-   write(6,"(A,2(D10.3))") " # Horizontal Laplacian diffusion coefficients (m2.s-1): ",Kx,Ky
-   write(6,"(A,  D10.3)")  " # Horizontal biharmonic diffusion coefficient (m4.s-1): ",binu
    
+   ! -------------------------------------------------------------------------------------
+!    write(6,*) "                                                  "
+   
+   if (biharmonic_horizontal) then
+      write(6,*) "# Horizontal biharmonic mixing ENABLED"
+      write(6,"(A,  D10.3)")  " # Horizontal mixing coefficient (m4.s-1): ",binu
+   else
+      write(6,*) "# Horizontal biharmonic mixing DISABLED"
+      write(6,"(A,2(D10.3))")  " # Horizontal mixing coefficient (m2.s-1): ",Kx,Ky
+   endif
+   
+   write(6,"(A,1(D10.3))") " # Vertical mixing coefficient (m2.s-1)  : ",KzMom
+
 #ifdef fixed_bottom_thickness
    IF(bottom_linear_drag) then
-     write(6,"(A,D10.3)")  " # Bottom drag is linear, with coefficient             : ",RR
+     write(6,"(A,D10.3)")  " # Bottom drag is linear with coefficient: ",RR
    ELSE
      write(6,*) " # Bottom drag not linear (not supported!)"
      STOP
@@ -116,45 +182,12 @@ subroutine checks
      write(6,*) "        - lv_flat_bottom in namelist (currently .FALSE.)"
      stop
    ENDIF
-#endif
- 
-
-   write(6,*) "                                                                          "
-   write(6,*) "-------------------------  GRID CHARACTERISTICS  -------------------------"
-   write(6,*) "                                                                          "
-   if(rect) then
-     write(6,*) "# Rectangular grid" 
-    else 
-     write(6,*) "# Non-rectangular grid"
-   endif
-
-   write(6,"(A,3(I8))")     " # Number of grids NI, NJ, NK          : ",NI,NJ,NK
-   write(6,"(A,F8.2,A2)")   " # Grid size Delta_x                   : ",dx, " m"
-   write(6,"(A,F8.2,A2)")   " # Grid size Delta_y                   : ",dy, " m"
-   write(6,"(A,F8.2,A2)")   " # Top layer thickness                 : ",dztop*DL, " m"
-   
-#ifdef fixed_bottom_thickness
-   write(6,"(A,F8.2,A2)")   " # Bottom layer thickness              : ",dzbot*DL, " m"
-#else
-   write(6,*)               " # Bottom layer thickness              : variable"
-#endif
-
-   write(6,"(A,D10.3)")     " # Vertical grid stretching factor     : ",pfac
-   write(6,"(A,F8.2,A2)")   " # Averaged depth of the topography    : ",depmean_dim, " m"
-   write(6,"(A,F8.2,A2)")   " # Total thickness of corrugated layers: ",distance, " m"
-   write(6,"(A,I8)")        " # Number of corrugated layers         : ",Nf   
-   
-   if(lv_flat_bottom) then
-     write(6,"(A,F8.2,A2)") " # Flat topography, depth: ",total_depth," m"
-   else
-     write(6,"(A,F8.2,A7,F8.2,A2)") " # Sloping topography, varying between : ",&
-                                      & MINVAL(zf(:,:,0)*DL)," m and ",MAXVAL(zf(:,:,0)*DL)," m"
-   endif
-
-
-   write(6,*) "                                                                          "
-   write(6,*) "-----------------------  PARTICLES CHARACTERISTICS  ----------------------"
-   write(6,*) "                                                                          "
+#endif   
+    
+   ! =====================================================================================
+!    write(6,*) "                                                                          "
+!    write(6,*) "-----------------------  PARTICLES CHARACTERISTICS  ----------------------"
+!    write(6,*) "                                                                        "
 
 #ifdef allow_particle
    write(6,*) "# Particles ENABLED."
@@ -167,9 +200,9 @@ subroutine checks
    write(6,*) "# Particles DISABLED. "
 #endif 
 
-
+   ! =====================================================================================
    write(6,*) "                                                                          "
-   write(6,*) "-------------------------  OUTPUT CHARACTERISTICS  -----------------------"
+   write(6,*) "------------------------  OUTPUT CHARACTERISTICS  ------------------------"
    write(6,*) "                                                                          "
 
 #ifdef file_output
@@ -195,56 +228,13 @@ subroutine checks
    write(6,*) "# output DISABLED."
 #endif
 
+   ! =====================================================================================
    write(6,*) "                                                                          "
-   write(6,*) "##########################################################################"
-   write(6,*) "#                                                                         "
-   write(6,*) "#-----------------------  NONDIMENSIONAL NUMBERS  ------------------------"
-   write(6,*) "#                                                                         "
-   write(6,*) "##########################################################################"
+   write(6,*) "---------------------------  INITIAL SETTING  ----------------------------"
    write(6,*) "                                                                          "
-
-   WRITE(6,"(A,E10.3)")  " # EPS     = ",EPS
-   WRITE(6,"(A,E10.3)")  " # delta   = ",delta
-   WRITE(6,"(A,E10.3)")  " # qpr     = ",qpr 
-   WRITE(6,"(A,E10.3)")  " # lambda  = ",lambda
-   WRITE(6,"(A,E10.3)")  " # beta    = ",beta
-   WRITE(6,"(A,E10.3)")  " # R0      = ",R0
-   WRITE(6,"(A,E10.3)")  " # P1      = ",P1
-   WRITE(6,"(A,E10.3)")  " # dtf     = ",dtf 
-   WRITE(6,"(A,E10.3)")  " # LEN     = ",LEN
-   WRITE(6,"(A,E10.3)")  " # DL      = ",DL
-   WRITE(6,"(A,E10.3)")  " # UL      = ",UL
-   WRITE(6,"(A,E10.3)")  " # WL      = ",WL
-   WRITE(6,"(A,E10.3)")  " # HL      = ",HL
-   WRITE(6,"(A,E10.3)")  " # HDL     = ",HDL 
-
-!    write(6,*) "                                                                          "
-!    write(6,*) "##########################################################################"
-!    write(6,*) "#                                                                         "
-!    write(6,*) "#----------------------------  USER VARIABLES  ---------------------------"
-!    write(6,*) "#                                                                         "
-!    write(6,*) "##########################################################################"
-!    write(6,*) "                                                                          "
-!    write(6,*) "# user1 : ",user1
-!    write(6,*) "# user2 : ",user2
-!    write(6,*) "# user3 : ",user3
-!    write(6,*) "# user4 : ",user4
-!    write(6,*) "# user5 : ",user5
-!    write(6,*) "# user6 : ",user6
-!    write(6,*) "# user7 : ",user7
-!    write(6,*) "# user8 : ",user8
-
-
-   write(6,*) "                                                                          "
-   write(6,*) "##########################################################################"
-   write(6,*) "#                                                                         "
-   write(6,*) "#---------------------------  INITIAL SETTING  ---------------------------"
-   write(6,*) "#                                                                         "
-   write(6,*) "##########################################################################"
-   write(6,*) "                                                                          "
-   write(6,"(A21,D15.7,A5,D15.7)") " #   u lies between: ",MINVAL(u(:,:,:,0))," and",MAXVAL(u(:,:,:,0))    
-   write(6,"(A21,D15.7,A5,D15.7)") " #   v lies between: ",MINVAL(v(:,:,:,0))," and",MAXVAL(v(:,:,:,0))    
-   write(6,"(A21,D15.7,A5,D15.7)") " #   w lies between: ",MINVAL(w(:,:,:,0))," and",MAXVAL(w(:,:,:,0))    
+   write(6,"(A21,D15.7,A5,D15.7)") " #   u lies between: ",MINVAL(u(:,:,:,0))*UL," and",MAXVAL(u(:,:,:,0))*UL    
+   write(6,"(A21,D15.7,A5,D15.7)") " #   v lies between: ",MINVAL(v(:,:,:,0))*UL," and",MAXVAL(v(:,:,:,0))*UL    
+   write(6,"(A21,D15.7,A5,D15.7)") " #   w lies between: ",MINVAL(w(:,:,:,0))*WL," and",MAXVAL(w(:,:,:,0))*WL    
 
 #ifdef rhoonly
    write(6,"(A21,D15.7,A5,D15.7,A11)") " # rho lies between: ",MINVAL(rho(:,:,:))," and",MAXVAL(rho(:,:,:))," (only rho)"    
@@ -254,10 +244,31 @@ subroutine checks
    write(6,"(A21,D15.7,A5,D15.7,A19)") " # rho lies between: ",MINVAL(rho(:,:,:))," and",MAXVAL(rho(:,:,:))," (rho from s and T)"
 #endif
    write(6,"(A21,D15.7,A5,D15.7)") " #   h lies between: ",MINVAL(h(:,:))," and",MAXVAL(h(:,:))    
+
+   write(6,*) "                                                                          "
+   write(6,*) "-----------------------  NONDIMENSIONAL NUMBERS  -------------------------"
+   write(6,*) "                                                                          "
+
+   WRITE(6,"(A,D15.7)")  " # EPS     = ",EPS
+   WRITE(6,"(A,D15.7)")  " # delta   = ",delta
+   WRITE(6,"(A,D15.7)")  " # qpr     = ",qpr 
+   WRITE(6,"(A,D15.7)")  " # lambda  = ",lambda
+   WRITE(6,"(A,D15.7)")  " # beta    = ",beta
+   WRITE(6,"(A,D15.7)")  " # R0      = ",R0
+   WRITE(6,"(A,D15.7)")  " # P1      = ",P1
+   WRITE(6,"(A,D15.7)")  " # dtf     = ",dtf 
+   WRITE(6,"(A,D15.7)")  " # LEN     = ",LEN
+   WRITE(6,"(A,D15.7)")  " # DL      = ",DL
+   WRITE(6,"(A,D15.7)")  " # UL      = ",UL
+   WRITE(6,"(A,D15.7)")  " # WL      = ",WL
+   WRITE(6,"(A,D15.7)")  " # HL      = ",HL
+   WRITE(6,"(A,D15.7)")  " # HDL     = ",HDL 
+   WRITE(6,"(A,D15.7)")  " # TL      = ",TL
+
    write(6,*) "                                                                          "
    write(6,*) "##########################################################################"
-
-
+   write(6,*) "                                                                          "
+   
  endif ! verobse
 
 !      open(unit=88,file='umax.out',status='new')                       
